@@ -1,0 +1,49 @@
+default-base: ubuntu@24.04/stable
+applications:
+  homedir-server:
+    charm: local:homedir-server-0
+    num_units: 1
+    to:
+    - "1"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+  openldap:
+    charm: local:openldap-0
+    num_units: 1
+    to:
+    - "0"
+    constraints: arch=amd64
+  sssd:
+    charm: local:sssd-2
+  sssd-no-autofs:
+    charm: local:sssd-3
+    options:
+      enable-autofs: false
+  u1:
+    charm: ubuntu
+    channel: latest/stable
+    revision: 25
+    num_units: 1
+    to:
+    - "2"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+    storage:
+      block: loop,100M
+      files: rootfs,100M
+machines:
+  "0":
+    constraints: arch=amd64
+  "1":
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+  "2":
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+relations:
+- - sssd:juju-info
+  - u1:juju-info
+- - sssd-no-autofs:juju-info
+  - homedir-server:juju-info
+- - sssd-no-autofs:ldap
+  - openldap:sssd
+- - sssd:ldap
+  - openldap:sssd
+- - homedir-server:homedir-server-ipaddr
+  - openldap:homedir-server-ipaddr

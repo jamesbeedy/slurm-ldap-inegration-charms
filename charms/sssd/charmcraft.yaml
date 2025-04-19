@@ -1,0 +1,50 @@
+# Copyright 2025 Vantage Compute Corporation
+# See LICENSE file for licensing details.
+name: sssd
+summary: |
+  Charmed sssd operator.
+
+description: |
+  This charmed operator deploys sssd.
+
+links:
+  contact: https://matrix.to/#/#hpc:ubuntu.com
+
+  issues:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator/issues
+
+  source:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator
+
+assumes:
+  - juju
+
+type: charm
+base: ubuntu@24.04
+platforms:
+  amd64:
+
+subordinate: true
+
+parts:
+  charm: {}
+
+charm-libs:
+  - lib: operator_libs_linux.apt
+    version: "0.17"
+
+requires:
+  ldap:
+    interface: ldap-sssd
+  juju-info:
+    interface: juju-info
+    scope: container
+
+
+config:
+  options:
+    enable-autofs:
+      type: boolean
+      default: true
+      description: |
+        Install and configure autofs alongside sssd.

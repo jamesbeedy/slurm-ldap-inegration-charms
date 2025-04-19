@@ -1,0 +1,78 @@
+default-base: ubuntu@24.04/stable
+applications:
+  jupyterhub:
+    charm: ./jupyterhub_amd64.charm
+    num_units: 1
+    to:
+    - "4"
+  jupyterhub-nfs:
+    charm: filesystem-client
+    channel: latest/edge
+    options:
+      mountpoint: /jupyterhub-nfs
+  mysql:
+    charm: mysql
+    base: ubuntu@22.04/stable
+    revision: 368
+    channel: 8.0/edge
+    num_units: 1
+    to:
+    - "3"
+    constraints: arch=amd64
+    storage:
+      database: rootfs,1,1024M
+  sackd:
+    charm: sackd
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "4"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 root-disk=20480 virt-type=virtual-machine
+  slurmctld:
+    charm: slurmctld
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "1"
+    options:
+      default-partition: slurmd
+    constraints: arch=amd64 cpu-cores=2 mem=4096 root-disk=20480 virt-type=virtual-machine
+  slurmd:
+    charm: slurmd
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "0"
+    constraints: arch=amd64 cpu-cores=2 mem=4096 root-disk=20480 virt-type=virtual-machine
+  slurmdbd:
+    charm: slurmdbd
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "2"
+    constraints: arch=amd64
+machines:
+  "0":
+    constraints: arch=amd64 cpu-cores=2 mem=4096 root-disk=20480 virt-type=virtual-machine
+  "1":
+    constraints: arch=amd64 cpu-cores=2 mem=4096 root-disk=20480 virt-type=virtual-machine
+  "2":
+    constraints: arch=amd64
+  "3":
+    constraints: arch=amd64
+    base: ubuntu@22.04/stable
+  "4":
+    constraints: arch=amd64 cpu-cores=2 mem=2048 root-disk=20480 virt-type=virtual-machine
+relations:
+- - slurmdbd:database
+  - mysql:database
+- - slurmdbd:slurmctld
+  - slurmctld:slurmdbd
+- - slurmd:slurmctld
+  - slurmctld:slurmd
+- - sackd:slurmctld
+  - slurmctld:login-node
+- - jupyterhub-nfs:juju-info
+  - slurmd:juju-info
+- - jupyterhub:filesystem
+  - jupyterhub-nfs:filesystem

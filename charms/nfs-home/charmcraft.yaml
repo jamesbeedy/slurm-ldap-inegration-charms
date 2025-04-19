@@ -1,0 +1,38 @@
+# Copyright 2025 Vantage Compute Corporation
+# See LICENSE file for licensing details.
+name: nfs-home
+summary: |
+  Serve user home directories via nfs.
+
+description: |
+  Serve user home directories via nfs.
+
+links:
+  contact: https://matrix.to/#/#hpc:ubuntu.com
+
+  issues:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator/issues
+
+  source:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator
+
+assumes:
+  - juju
+
+type: charm
+base: ubuntu@24.04
+platforms:
+  amd64:
+
+subordinate: false
+
+parts:
+  charm: {}
+
+charm-libs:
+  - lib: operator_libs_linux.apt
+    version: "0.17"
+
+provides:
+  homedir-server-ipaddr:
+    interface: homedir-server-ipaddr

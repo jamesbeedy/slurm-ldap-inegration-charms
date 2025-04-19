@@ -1,0 +1,112 @@
+default-base: ubuntu@24.04/stable
+applications:
+  nfs-home:
+    charm: ./_build/nfs-home.charm
+    num_units: 1
+    to:
+    - "0"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine root-disk=51200
+
+  openldap:
+    charm: ./_build/openldap.charm
+    num_units: 1
+    to:
+    - "1"
+    constraints: arch=amd64
+
+  sssd-autofs:
+    charm: ./_build/sssd.charm
+    num_units: 0
+
+  sssd-no-autofs:
+    charm: ./_build/sssd.charm
+    num_units: 0
+    options:
+      enable-autofs: false
+
+  mysql:
+    charm: mysql
+    base: ubuntu@22.04/stable
+    channel: 8.0/stable
+    num_units: 1
+    to:
+    - "2"
+    constraints: arch=amd64
+    storage:
+      database: rootfs,1,1024M
+
+  slurmdbd:
+    charm: slurmdbd
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "3"
+    constraints: arch=amd64
+
+  sackd:
+    charm: sackd
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "4"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 root-disk=20480 virt-type=virtual-machine
+
+  slurmctld:
+    charm: slurmctld
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "5"
+    options:
+      default-partition: slurmd
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+
+  slurmd:
+    charm: slurmd
+    channel: latest/edge
+    num_units: 1
+    to:
+    - "6"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine root-disk=51200
+ 
+machines:
+  "0":
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine root-disk=51200
+  "1":
+    constraints: arch=amd64
+  "2":
+    constraints: arch=amd64
+    base: ubuntu@22.04/stable
+  "3":
+    constraints: arch=amd64
+  "4":
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+  "5":
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+  "6":
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
+
+relations:
+- - slurmdbd:database
+  - mysql:database
+- - slurmdbd:slurmctld
+  - slurmctld:slurmdbd
+- - slurmd:slurmctld
+  - slurmctld:slurmd
+- - sackd:slurmctld
+  - slurmctld:login-node
+- - sssd-autofs:juju-info
+  - slurmd:juju-info
+- - sssd-autofs:juju-info
+  - slurmctld:juju-info
+- - sssd-autofs:juju-info
+  - sackd:juju-info
+- - sssd-no-autofs:juju-info
+  - nfs-home:juju-info
+- - sssd-no-autofs:ldap
+  - openldap:sssd
+- - sssd-autofs:ldap
+  - openldap:sssd
+- - nfs-home:homedir-server-ipaddr
+  - openldap:homedir-server-ipaddr
+
