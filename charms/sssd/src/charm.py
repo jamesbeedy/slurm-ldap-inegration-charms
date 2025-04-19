@@ -79,14 +79,14 @@ class SSSDOperatorCharm(CharmBase):
         secret_id = event.relation.data[event.app].get(
             "sssd-binder-password-secret-id", None
         )
-        base_dn = event.relation.data[event.app].get("base-dn", None)
+        olc_suffix = event.relation.data[event.app].get("olc-suffix", None)
         domain = event.relation.data[event.app].get("domain", None)
         ldap_ip = event.relation.data[event.unit].get("ingress-address", None)
 
-        if not all([secret_id, domain, base_dn, ldap_ip]):
+        if not all([secret_id, domain, olc_suffix, ldap_ip]):
             logger.debug(f"secret-id: {secret_id}")
             logger.debug(f"domain: {domain}")
-            logger.debug(f"base-dn: {base_dn}")
+            logger.debug(f"olc-suffix: {olc_suffix}")
             logger.debug(f"ingress-address: {ldap_ip}")
             logger.debug("Dependencies unmet, deferring event.")
             event.defer()
@@ -95,7 +95,7 @@ class SSSDOperatorCharm(CharmBase):
         secret = self.model.get_secret(id=secret_id, label="sssd-binder-password")
         sssd_binder_password = secret.get_content().get("password", None)
         self._sssd.render_config_and_restart(
-            base_dn, domain, ldap_ip, sssd_binder_password
+            olc_suffix, domain, ldap_ip, sssd_binder_password
         )
 
 

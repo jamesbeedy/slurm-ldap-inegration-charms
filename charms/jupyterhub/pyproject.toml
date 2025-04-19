@@ -1,0 +1,17 @@
+[project]
+name = "jupyterhub"
+version = "0.0"
+requires-python = "==3.12.*"
+dependencies = ["ops"]
+
+[tool.repository]
+
+[tool.ruff]
+# Exclude a variety of commonly ignored directories.
+exclude = [
+  "templates/jupyterhub_config.py",
+]
+
+[tool.codespell]
+# Skip checking charm libs
+ignore-words-list = "fpr"

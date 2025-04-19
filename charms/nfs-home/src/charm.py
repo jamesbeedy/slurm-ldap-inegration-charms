@@ -2,7 +2,7 @@
 # Copyright (c) 2025 Vantage Compute Corp.
 # See LICENSE file for licensing details.
 
-"""JupyterhubOperatorCharm."""
+"""NFSHomeOperatorCharm."""
 
 import logging
 
@@ -22,8 +22,8 @@ from nfs import NFSKernelServer, NFSOpsError
 logger = logging.getLogger()
 
 
-class HomedirServerOperatorCharm(CharmBase):
-    """Homedir Server Operator lifecycle events."""
+class NFSHomeOperatorCharm(CharmBase):
+    """NFSHome Operator lifecycle events."""
 
     def __init__(self, *args, **kwargs):
         """Init _stored attributes and interfaces, observe events."""
@@ -61,4 +61,4 @@ class HomedirServerOperatorCharm(CharmBase):
 
 
 if __name__ == "__main__":  # pragma: nocover
-    main(HomedirServerOperatorCharm)
+    main(NFSHomeOperatorCharm)

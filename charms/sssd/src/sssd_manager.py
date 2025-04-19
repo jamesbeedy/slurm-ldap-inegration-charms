@@ -113,7 +113,7 @@ class SSSDOps:
 
     def render_config_and_restart(
         self,
-        base_dn: str,
+        olc_suffix: str,
         domain: str,
         ldap_ip: str,
         sssd_binder_password: str,
@@ -127,7 +127,7 @@ class SSSDOps:
         )
         sssd_conf_template = Template(sssd_conf_template_path.read_text())
         sssd_conf_content = sssd_conf_template.substitute(
-            base_dn=base_dn,
+            olc_suffix=olc_suffix,
             domain=domain,
             ldap_ip=ldap_ip,
             sssd_binder_password=sssd_binder_password,

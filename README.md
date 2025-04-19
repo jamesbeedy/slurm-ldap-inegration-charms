@@ -1,4 +1,6 @@
-# SLURM + LDAP Integration Charms
+# User Federation Charmed Operators
+
+#### User Federation + Automount Homes for Slurm Charms
 
 This repository comprises three charmed services:
 * [openldap](./charms/openldap)
@@ -12,9 +14,9 @@ Build the charms in this repo, then deploy them alongside the slurm charms using
 
 ### Build the Charms
 This project uses [`uv`](https://docs.astral.sh/uv/) in combination with [`just`](https://github.com/casey/just)
-to drive [`charmcraft`](https://canonical-charmcraft.readthedocs-hosted.com/en/stable/) to build the charms in lxd containers.
+to drive [`charmcraft`](https://canonical-charmcraft.readthedocs-hosted.com/en/stable/) to build the [charms](https://juju.is/charms-architecture) in [`lxd`](https://canonical.com/lxd) containers.
 
-Once you have `charmcraft`, `lxd`, `just`, and `uv` installed you are ready to build. 
+Once you have `charmcraft`, `lxd`, `just`, and `uv` installed you are ready to build.
 
 Build the charms using the following command.
 ```bash
@@ -22,66 +24,119 @@ just repo build
 ```
 
 
-### Deploy the [`bundle.yaml`](./bundle.yaml)
-Use [`juju`](https://juju.is/) to deploy the `bundle.yaml` file.
+### Deploy the Bundle
+Use [`juju`](https://juju.is/) to deploy the [`bundle.yaml`](./bundle.yaml) file.
 
-Note: `juju` uses the local `lxd` hypervisor to orchestrate services, so ensure you have that [setup](https://canonical.com/microstack/docs/bootstrap-lxd-based-juju-controller).
+Note: `juju` uses the local `lxd` hypervisor to orchestrate services. Ensure juju and lxd are [setup](https://canonical.com/microstack/docs/bootstrap-lxd-based-juju-controller).
 
 Assuming you have a bootstrapped lxd controller handy, add the model to house the infrastructure and deploy the bundle.
 ```bash
-juju add-model ldap-testing
+juju bootstrap localhost
+
+juju add-model ldap-testing localhost
+
+sed -i "s|\(keycloak-url: http://\)[0-9.]\+|\1$(hostname -I | awk '{print $1}')|" bundle.yaml
 
 juju deploy ./bundle.yaml
 ```
 
+Run `juju status --watch 1s --color` to watch the infrastructure spin up.
+
+When the deployment is finished it should resemble:
+```bash
+Model         Controller           Cloud/Region         Version  SLA          Timestamp
+ldap-testing  localhost-localhost  localhost/localhost  3.6.5    unsupported  22:01:39Z
+
+App             Version          Status  Scale  Charm              Channel      Rev  Exposed  Message
+jupyterhub                       active      1  jupyterhub                        0  no       http://192.168.7.143:8000
+jupyterhub-nfs                   active      1  filesystem-client  latest/edge   15  no       Mounted filesystem at `/jupyterhub-nfs`.
+mysql           8.0.41-0ubun...  active      1  mysql              8.0/stable   366  no     
+nfs-home                         active      1  nfs-home                          0  no     
+openldap                         active      1  openldap                          0  no       Serving: dc=vantage
+sackd           23.11.4-1.2u...  active      1  sackd              latest/edge   18  no        
+slurmctld       23.11.4-1.2u...  active      1  slurmctld          latest/edge  100  no     
+slurmd          23.11.4-1.2u...  active      1  slurmd             latest/edge  121  no        
+slurmdbd        23.11.4-1.2u...  active      1  slurmdbd           latest/edge   92  no     
+sssd-autofs                      active      3  sssd                              0  no       
+sssd-no-autofs                   active      1  sssd                              0  no     
+
+Unit                 Workload  Agent  Machine  Public address  Ports           Message
+jupyterhub/0*        active    idle   4        192.168.7.143                   http://192.168.7.143:8000
+mysql/0*             active    idle   2        192.168.7.139   3306,33060/tcp  Primary
+nfs-home/0*          active    idle   0        192.168.7.141           
+  sssd-no-autofs/0*  active    idle            192.168.7.141           
+openldap/0*          active    idle   1        192.168.7.137                   Serving: dc=vantage
+sackd/0*             active    idle   4        192.168.7.143                        
+  sssd-autofs/2      active    idle            192.168.7.143                       
+slurmctld/0*         active    idle   5        192.168.7.140           
+  sssd-autofs/0*     active    idle            192.168.7.140                           
+slurmd/0*            active    idle   6        192.168.7.142                       
+  jupyterhub-nfs/0*  active    idle            192.168.7.142                   Mounted filesystem at `/jupyterhub-nfs`.
+  sssd-autofs/1      active    idle            192.168.7.142                       
+slurmdbd/0*          active    idle   3        192.168.7.138           
+
+Machine  State    Address        Inst id        Base          AZ  Message
+0        started  192.168.7.141  juju-571140-0  ubuntu@24.04      Running
+1        started  192.168.7.137  juju-571140-1  ubuntu@24.04      Running
+2        started  192.168.7.139  juju-571140-2  ubuntu@22.04      Running
+3        started  192.168.7.138  juju-571140-3  ubuntu@24.04      Running
+4        started  192.168.7.143  juju-571140-4  ubuntu@24.04      Running
+5        started  192.168.7.140  juju-571140-5  ubuntu@24.04      Running
+6        started  192.168.7.142  juju-571140-6  ubuntu@24.04      Running
+```
+
 ### Access the System
-This deployment has been seeded with 2 users in ldap, respectively, user1 and user2.
 
-To login to the system as one of these users, you must first ensure that the home directory has been created on the nfs home server, then you can ssh
-into the machine as the ldap user and have your `/home` directory mounted on every node in the cluster.
-
-#### 1) Make sure a homedirectory exists
-```bash
-$ juju exec --unit nfs-home/0 "sudo -iu user1"
-Creating directory '/home/user1'.
-```
-
-#### 2) Move the test ssh key and chmod/chown
-```bash
-cp charms/openldap/notes/id_rsa_ldap ~/.ssh/id_rsa_ldap
-chown $USER ~/.ssh/id_rsa_ldap
-chmod 600 ~/.ssh/id_rsa_ldap
-```
-
-#### 3) Run node-configured to prepare the cluster
+#### 1) Run node-configured to prepare the cluster
 ```bash
 juju run slurmd/leader node-configured
 ```
 
-#### 4) SSH into the sackd/0 as user1
+#### 2) Create a user
 ```bash
-sackd_ip=`juju status sackd --format json   | jq -r '.applications.sackd.units[]["public-address"]'`
-ssh -i ~/.ssh/id_rsa_ldap user1@$sackd_ip
+juju run openldap/leader add-user username="johndoe" password="password" uid="'5999'" ssh-key="$(cat ~/.ssh/id_rsa.pub)" email="johndoe@example.com"
+```
+
+#### 3) Make sure a homedirectory exists
+```bash
+juju exec --unit nfs-home/0 "sudo -iu johndoe"
+```
+
+#### 4) SSH into the sackd/0 as johndoe
+```bash
+juju ssh johndoe@sackd/0
 ```
 
 #### 5) Run a job as user1 from the sackd unit.
 Use slurm to validate our work.
 ```bash
-user1@juju-e0196c-4:~$ srun -pslurmd hostname
-juju-e0196c-6
+srun hostname
 
-user1@juju-e0196c-4:~$ srun -pslurmd echo $UID
-5556
+srun echo $UID
 
-user1@juju-e0196c-4:~$ srun -pslurmd echo $USER
-user1
+srun echo $USER
 
-user1@juju-e0196c-4:~$ srun -pslurmd pwd
-/home/user1
+srun pwd
 
-user1@juju-e0196c-4:~$ srun -pslurmd mount | grep home
-auto.home on /home type autofs (rw,relatime,fd=7,pgrp=16679,timeout=300,minproto=5,maxproto=5,indirect,pipe_ino=58346)
-10.240.222.222:/home/user1 on /home/user1 type nfs4 (rw,relatime,vers=4.2,rsize=262144,wsize=262144,namlen=255,hard,proto=tcp,timeo=600,retrans=2,sec=sys,clientaddr=10.240.222.142,local_lock=none,addr=10.240.222.222)
+srun mount | grep home
 ```
 
+#### Deploy Keycloak and integrate with LDAP
+Prepare the ldap server cert to be added to the keycloak truststore.
+```bash
+juju ssh --quiet --pty=false openldap/leader cat /etc/ldap/ldap01_slapd_cert.pem > .extras/cert.pem
+```
+
+```bash
+JUPYTERHUB_CLIENT_SECRET=wrJhitNSE7mLZ3FImrZ5a6CqwEt8b4pP \
+JUPYTERHUB_URL=`juju run jupyterhub/leader get-jupyterhub-url --quiet --format=json  | jq .[].results.url | xargs -I % -0 python3 -c 'print(%)'` \
+LDAP_HOST=`juju status --format json | jq -r '.applications.openldap.units[]["public-address"]'` \
+LDAP_ADMIN_PASSWORD=`juju run openldap/leader get-admin-password --quiet | awk '{print $2}' | tr -d "\n"` \
+    docker compose up -d
+```
+
+Run the following command to get the jupyterhub url and then visit the url in your browser. Login with the johndoe username and password we created above.
+```bash
+juju run jupyterhub/leader get-jupyterhub-url --quiet --format=json  | jq .[].results.url | xargs -I % -0 python3 -c 'print(%)'
+```
 

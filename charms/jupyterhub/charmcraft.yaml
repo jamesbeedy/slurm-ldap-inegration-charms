@@ -1,0 +1,79 @@
+# Copyright 2025 Vantage Compute Corp
+# See LICENSE file for licensing details.
+name: jupyterhub
+summary: |
+  Charmed Jupyterhub operator with slurm integration.
+
+description: |
+  This charmed operator deploys jupyterhub configured to work with slurm.
+
+links:
+  contact: https://matrix.to/#/#hpc:ubuntu.com
+
+  issues:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator/issues
+
+  source:
+  - https://github.com/charmed-hpc/charm-jupyterhub-slurm-operator
+
+assumes:
+  - juju
+
+type: charm
+base: ubuntu@24.04
+platforms:
+  amd64:
+
+subordinate: false
+
+parts:
+  charm: {}
+
+charm-libs:
+  - lib: operator_libs_linux.apt
+    version: "0.17"
+  - lib: filesystem_client.filesystem_info
+    version: "0.3"
+
+provides:
+  filesystem:
+    interface: filesystem_info
+
+peers:
+  jupyterhub-peer:
+    interface: jupyterhub-peer
+
+config:
+  options:
+    tailscale-auth-key-secret-id:
+      type: string
+      default: ""
+      description: |
+        Tailscale auth key secret id.
+    oidc-client-id:
+      type: string
+      default: "jupyter"
+      description: |
+        OIDC client id
+    oidc-client-secret:
+      type: string
+      default:
+      description: |
+        OIDC client secret
+    keycloak-url:
+      type: string
+      default:
+      description: |
+        Keycloak url
+
+actions:
+  get-jupyterhub-url:
+    description: |
+      Display the `jupyterhub_url`.
+
+      Example usage:
+
+      ```bash
+      juju run jupyterhub/leader get-jupyterhub-url \
+          --quiet --format=json  | jq .[].results.url | xargs -I % -0 python3 -c 'print(%)'
+      ```

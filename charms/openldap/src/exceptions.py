@@ -1,7 +1,7 @@
 # Copyright (c) 2025 Vantage Compute Corporation
 # See LICENSE file for licensing details.
 
-"""exceptions.py"""
+"""exceptions.py."""
 
 
 class IngressAddressUnavailableError(Exception):

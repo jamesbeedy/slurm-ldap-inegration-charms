@@ -42,6 +42,10 @@ requires:
   homedir-server-ipaddr:
     interface: homedir-server-ipaddr
 
+peers:
+  openldap-peer:
+    interface: openldap-peer
+
 config:
   options:
     admin-password:
@@ -51,7 +55,7 @@ config:
         LDAP administrator password.
     domain:
       type: string
-      default: "example.com"
+      default: "charmed-hpc"
       description: |
         LDAP Domain.
     organization-name:
@@ -79,3 +83,36 @@ actions:
       ```bash
       juju run openldap/leader get-sssd-binder-password
       ```
+  add-user:
+    description: |
+      Add user to ldap.
+
+      Example usage:
+      $ juju run openldap/leader add-user \
+          username="user1" \
+          password="rats123" \
+          email="user1@user1.com" \
+          uid="6699" \
+          ssh-key="$(cat ~/.ssh/id_rsa.pub)"
+    params:
+      username:
+        type: string
+        description: The username of the user you wish to add.
+      password:
+        type: string
+        description: Reason password of the ldap user.
+      email:
+        type: string
+        description: The user's email.
+      uid:
+        type: string
+        description: The user's uid number.
+      ssh-key:
+        type: string
+        description: The user's ssh-key
+    required:
+      - username
+      - password
+      - email
+      - uid
+      - ssh-key
