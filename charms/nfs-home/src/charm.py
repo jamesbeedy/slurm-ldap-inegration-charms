@@ -2,28 +2,26 @@
 # Copyright (c) 2025 Vantage Compute Corp.
 # See LICENSE file for licensing details.
 
-"""JupyterhubOperatorCharm."""
+"""NFSHomeOperatorCharm."""
 
 import logging
 
+from nfs import NFSKernelServer, NFSOpsError
 from ops import (
+    ActiveStatus,
+    BlockedStatus,
     CharmBase,
     InstallEvent,
     RemoveEvent,
-    ActiveStatus,
-    BlockedStatus,
     WaitingStatus,
     main,
 )
 
-from nfs import NFSKernelServer, NFSOpsError
-
-
 logger = logging.getLogger()
 
 
-class HomedirServerOperatorCharm(CharmBase):
-    """Homedir Server Operator lifecycle events."""
+class NFSHomeOperatorCharm(CharmBase):
+    """NFSHome Operator lifecycle events."""
 
     def __init__(self, *args, **kwargs):
         """Init _stored attributes and interfaces, observe events."""
@@ -44,9 +42,7 @@ class HomedirServerOperatorCharm(CharmBase):
             self.unit.status = ActiveStatus("NFS server installed.")
             self.unit.status = ActiveStatus("")
         except NFSOpsError as e:
-            self.unit.status = BlockedStatus(
-                "Trouble installing NFS server, please debug."
-            )
+            self.unit.status = BlockedStatus("Trouble installing NFS server, please debug.")
             logger.debug(e)
             event.defer()
             return
@@ -61,4 +57,4 @@ class HomedirServerOperatorCharm(CharmBase):
 
 
 if __name__ == "__main__":  # pragma: nocover
-    main(HomedirServerOperatorCharm)
+    main(NFSHomeOperatorCharm)

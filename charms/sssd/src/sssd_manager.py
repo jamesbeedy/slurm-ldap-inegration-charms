@@ -3,16 +3,15 @@
 
 """SSSDOps."""
 
-import logging
-import subprocess
-import re
 import fileinput
+import logging
+import re
+import subprocess
 import sys
 from pathlib import Path
 from string import Template
 
 import charms.operator_libs_linux.v0.apt as apt
-
 
 logger = logging.getLogger()
 
@@ -59,16 +58,15 @@ def _restart(service: str) -> None:
 
 def _setup_lhome() -> None:
     """Arrange the local home dir to /lhome."""
-
     subprocess.call(["mkdir", "-p", "/lhome"])
     subprocess.call(["usermod", "ubuntu", "-m", "-d", "/lhome/ubuntu"])
 
     subprocess.call(
-        "sed -i 's+\(^HOME\|^# HOME\)=/home$+HOME=/lhome+g' " "/etc/default/useradd",
+        r"sed -i 's+\(^HOME\|^# HOME\)=/home$+HOME=/lhome+g' /etc/default/useradd",
         shell=True,
     )
     subprocess.call(
-        "sed -i 's+\(^DHOME\|^# DHOME\)=/home$+DHOME=/lhome+g' " "/etc/adduser.conf",
+        r"sed -i 's+\(^DHOME\|^# DHOME\)=/home$+DHOME=/lhome+g' /etc/adduser.conf",
         shell=True,
     )
     Path("/etc/apparmor.d/tunables/home.d/site.local").write_text("@{HOMEDIRS}+=/lhome")
@@ -113,21 +111,18 @@ class SSSDOps:
 
     def render_config_and_restart(
         self,
-        base_dn: str,
+        olc_suffix: str,
         domain: str,
         ldap_ip: str,
         sssd_binder_password: str,
     ) -> None:
         """Render the ssd.conf template and restart the service."""
-
         sssd_conf_template_path = Path(
-            "./templates/sssd-autofs.conf"
-            if self._enable_autofs
-            else "./templates/sssd.conf"
+            "./templates/sssd-autofs.conf" if self._enable_autofs else "./templates/sssd.conf"
         )
         sssd_conf_template = Template(sssd_conf_template_path.read_text())
         sssd_conf_content = sssd_conf_template.substitute(
-            base_dn=base_dn,
+            olc_suffix=olc_suffix,
             domain=domain,
             ldap_ip=ldap_ip,
             sssd_binder_password=sssd_binder_password,

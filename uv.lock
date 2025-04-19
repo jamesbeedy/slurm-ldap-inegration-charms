@@ -4,6 +4,7 @@ requires-python = "==3.12.*"
 
 [manifest]
 members = [
+    "jupyterhub",
     "nfs-home",
     "openldap",
     "slurm-ldap-integration-charms",
@@ -359,6 +360,17 @@ sdist = { url = "https://files.pythonhosted.org/packages/66/32/0816544d9997f66a4
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9e/a0/b3e6e6b79409e384627a79636cd012dd03b5ae103669a868147faf9cd830/juju-3.6.1.1-py3-none-any.whl", hash = "sha256:19ede730130b03cd5a99850f812521c2eb93199771207b50e1edf86e5e47acb2", size = 287124 },
 ]
+
+[[package]]
+name = "jupyterhub"
+version = "0.0"
+source = { virtual = "charms/jupyterhub" }
+dependencies = [
+    { name = "ops" },
+]
+
+[package.metadata]
+requires-dist = [{ name = "ops" }]
 
 [[package]]
 name = "kubernetes"

@@ -1,0 +1,24 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:latest
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      LDAP_HOST: ${LDAP_HOST}
+      LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
+      JUPYTERHUB_CLIENT_SECRET: ${JUPYTERHUB_CLIENT_SECRET}
+      JUPYTERHUB_URL: ${JUPYTERHUB_URL}
+    command: start-dev --spi-admin-allowed-system-variables=LDAP_HOST,LDAP_ADMIN_PASSWORD,JUPYTERHUB_CLIENT_SECRET,JUPYTERHUB_URL --import-realm --verbose
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./extra/keycloak/realm-next-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./.extras/cert.pem:/opt/keycloak/conf/truststores/cert.pem
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: ${LDAP_HOST}
+      PHPLDAPADMIN_HTTPS: "false"   # deactivate HTTPS
+    ports:
+      - "8081:80"
