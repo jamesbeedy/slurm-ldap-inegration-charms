@@ -112,8 +112,7 @@ juju exec --unit nfs-home/0 "sudo -iu johndoe"
 juju ssh johndoe@sackd/0
 ```
 
-#### 5) Run a job as user1 from the sackd unit.
-Use slurm to validate our work.
+#### 5) Use slurm to validate our work
 ```bash
 srun hostname
 
