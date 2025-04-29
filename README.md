@@ -132,7 +132,7 @@ juju ssh --quiet --pty=false openldap/leader cat /etc/ldap/ldap01_slapd_cert.pem
 ```
 
 ```bash
-JUPYTERHUB_CLIENT_SECRET=wrJhitNSE7mLZ3FImrZ5a6CqwEt8b4pP \
+JUPYTERHUB_CLIENT_SECRET=`juju config jupyterhub oidc-client-secret` \
 JUPYTERHUB_URL=`juju run jupyterhub/leader get-jupyterhub-url --quiet --format=json  | jq .[].results.url | xargs -I % -0 python3 -c 'print(%)'` \
 LDAP_HOST=`juju status --format json | jq -r '.applications.openldap.units[]["public-address"]'` \
 LDAP_ADMIN_PASSWORD=`juju run openldap/leader get-admin-password --quiet | awk '{print $2}' | tr -d "\n"` \
