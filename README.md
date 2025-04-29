@@ -1,13 +1,18 @@
 # User Federation Charmed Operators
 
-#### User Federation + Automount Homes for Slurm Charms
+#### User Federation + Automount Homes for Slurm Charms + Jupyterhub
 
-This repository comprises three charmed services:
+This repository comprises four charmed services:
 * [openldap](./charms/openldap)
 * [sssd](./charms/sssd)
 * [nfs-home](./charms/nfs-home)
+* [jupyterhub](./charms/jupyterhub)
 
-These three services work together to provide federated users and automount homedirs for the slurm cluster.
+And two docker services (using [docker-compose.yml](./docker-compose.yml)):
+* [keycloak](https://keycloak.org)
+* [phpldapadmin](https://github.com/leenooks/phpLDAPadmin)
+
+These three services work together to provide federated users and automount homedirs for the slurm cluster + Jupyterhub.
 
 ## Getting Started
 Build the charms in this repo, then deploy them alongside the slurm charms using the `bundle.yaml`.
