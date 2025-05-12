@@ -7,7 +7,7 @@ applications:
     num_units: 1
     options:
       oidc-client-secret: wrJhitNSE7mLZ3FImrZ5a6CqwEt8b4pP
-      keycloak-url: http://192.168.7.10:8080
+      keycloak-url: http://192.168.7.8:8080
     to:
     - "4"
 

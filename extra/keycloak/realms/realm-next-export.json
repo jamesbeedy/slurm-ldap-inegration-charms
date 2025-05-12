@@ -1529,7 +1529,8 @@
   "smtpServer": {},
   "eventsEnabled": false,
   "eventsListeners": [
-    "jboss-logging"
+    "jboss-logging",
+    "organization-event-listener"
   ],
   "enabledEventTypes": [],
   "adminEventsEnabled": false,
@@ -1806,17 +1807,6 @@
               }
             },
             {
-              "id": "a0c46830-490e-4649-a2c2-f4510a0688b0",
-              "name": "MSAD account controls",
-              "providerId": "msad-user-account-control-mapper",
-              "subComponents": {},
-              "config": {
-                "always.read.enabled.value.from.ldap": [
-                  "true"
-                ]
-              }
-            },
-            {
               "id": "ceb67fac-91ac-490f-8b90-5d4905199768",
               "name": "gidNumber",
               "providerId": "user-attribute-ldap-mapper",
@@ -1977,7 +1967,7 @@
                   "groupOfNames"
                 ],
                 "groups.dn": [
-                  "ou=Groups,dc=vantage"
+                  "ou=Groups,ou=example,ou=organizations,dc=vantage"
                 ],
                 "groups.path": [
                   "/"
@@ -2006,7 +1996,7 @@
             "true"
           ],
           "usersDn": [
-            "ou=People,dc=vantage"
+            "ou=People,ou=example,ou=organizations,dc=vantage"
           ],
           "cachePolicy": [
             "DEFAULT"
@@ -2896,7 +2886,7 @@
   },
   "keycloakVersion": "26.2.1",
   "userManagedAccessAllowed": false,
-  "organizationsEnabled": false,
+  "organizationsEnabled": true,
   "verifiableCredentialsEnabled": false,
   "adminPermissionsEnabled": false,
   "clientProfiles": {

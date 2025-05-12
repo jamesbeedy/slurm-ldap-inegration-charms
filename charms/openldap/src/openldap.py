@@ -206,7 +206,7 @@ def _add_sssd_binder_user(idx: str, olc_suffix: str, sssd_binder_password: str) 
 
     add_ssd_binder_ldif = dedent(
         f"""
-        dn: cn=sssd-binder,ou=ServiceAccounts,{olc_suffix}
+        dn: cn=sssd-binder,ou=ServiceAccounts,ou=example,ou=organizations,{olc_suffix}
         objectClass: simpleSecurityObject
         objectClass: organizationalRole
         cn: sssd-binder
@@ -223,17 +223,17 @@ def _add_organizational_units(olc_suffix: str) -> None:
     add_organizational_units_ldif = dedent(
         f"""
         # Entry #1 ServiceAccounts
-        dn: ou=ServiceAccounts,{olc_suffix}
+        dn: ou=ServiceAccounts,ou=example,ou=organizations,{olc_suffix}
         objectClass: organizationalUnit
         ou: ServiceAccounts
 
         # Entry #2 Groups
-        dn: ou=Groups,{olc_suffix}
+        dn: ou=Groups,ou=example,ou=organizations,{olc_suffix}
         objectclass: organizationalUnit
         ou: Groups
 
         # Entry #3 People
-        dn: ou=People,{olc_suffix}
+        dn: ou=People,ou=example,ou=organizations,{olc_suffix}
         objectclass: organizationalUnit
         ou: People
         """
@@ -411,13 +411,40 @@ def _update_permissions(idx: str, olc_suffix: str) -> None:
         olcAccess: to attrs=shadowLastChange by self write by * read
         olcAccess: to *                      by dn.exact="gidNumber=0+uidNumber=0,cn=peercred,cn=external,cn=auth" manage
                                              by dn.exact="cn=admin,{olc_suffix}" manage
-                                             by dn.exact="cn=sssd-binder,ou=ServiceAccounts,{olc_suffix}" read
+                                             by dn.exact="cn=sssd-binder,ou=ServiceAccounts,ou=example,ou=organizations,{olc_suffix}" read
                                              by * by users read
         """
     )
 
     logger.debug(update_acls)
     _ldap_ex("modify", update_acls)
+
+
+def _add_organizations_ou(olc_suffix: str) -> None:
+    """Add organizations ou."""
+    organizations_ou_ldif = dedent(
+        f"""
+        # ─── 1) Create the organizations container ────
+        dn: ou=organizations,{olc_suffix}
+        objectClass: top
+        objectClass: organizationalUnit
+        ou: organizations
+        """
+    )
+    logger.debug(organizations_ou_ldif)
+    _ldap_ex("add", organizations_ou_ldif)
+
+    example_organization_ou_ldif = dedent(
+        f"""
+        # ─── 1) Create the example organization container ────
+        dn: ou=example,ou=organizations,{olc_suffix}
+        objectClass: top
+        objectClass: organizationalUnit
+        ou: example
+        """
+    )
+    logger.debug(example_organization_ou_ldif)
+    _ldap_ex("add", example_organization_ou_ldif)
 
 
 def _ldap_ex(cmd: Literal["add", "modify"], ldif: str) -> None:
@@ -673,6 +700,7 @@ class OpenLDAPOps:
         _add_memberof_module_and_overlay(idx)
 
         # Add organizational units.
+        _add_organizations_ou(olc_suffix)
         _add_organizational_units(olc_suffix)
 
         # Add sssd-binder user and assign permissions.
@@ -693,8 +721,8 @@ class OpenLDAPOps:
 
         user_details_ldif = dedent(
             f"""
-            # Entry 1: uid={username},ou=People,{olc_suffix}
-            dn: uid={username},ou=People,{olc_suffix}
+            # Entry 1: uid={username},ou=People,ou=example,ou=organizations,{olc_suffix}
+            dn: uid={username},ou=People,ou=example,ou=organizations,{olc_suffix}
             cn: {username}
             gidnumber: 5599
             homedirectory: /home/{username}
@@ -715,16 +743,16 @@ class OpenLDAPOps:
         _ldap_ex("add", user_details_ldif)
 
         ldif = ""
-        if _get_ldapsearch_result(f"cn=slurm-users,ou=Groups,{olc_suffix}") is not True:
+        if _get_ldapsearch_result(f"cn=slurm-users,ou=Groups,ou=example,ou=organizations,{olc_suffix}") is not True:
             ldif = dedent(
                 f"""
-                dn: cn=slurm-users,ou=Groups,{olc_suffix}
+                dn: cn=slurm-users,ou=Groups,ou=example,ou=organizations,{olc_suffix}
                 objectClass: top
                 objectClass: groupOfNames
                 objectClass: posixGroup
                 cn: slurm-users
                 description: Slurm User Group
-                member: uid={username},ou=People,{olc_suffix}
+                member: uid={username},ou=People,ou=example,ou=organizations,{olc_suffix}
                 gidNumber: 5599
                 """
             )
@@ -734,7 +762,7 @@ class OpenLDAPOps:
         else:
             ldif = dedent(
                 f"""
-                dn: cn=slurm-users,ou=Groups,{olc_suffix}
+                dn: cn=slurm-users,ou=Groups,ou=example,ou=organizaions,{olc_suffix}
                 changetype: modify
                 add: memberUid
                 memberUid: {username}

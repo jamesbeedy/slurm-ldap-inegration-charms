@@ -12,7 +12,8 @@ services:
     ports:
       - "8080:8080"
     volumes:
-      - ./extra/keycloak/realm-next-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./extra/keycloak/realms/realm-next-export.json:/opt/keycloak/data/import/realm-export.json
+      - ./extra/keycloak-org-listener/target/keycloak-org-listener-1.0.0.jar:/opt/keycloak/providers/keycloak-org-listener-1.0.0.jar
       - ./.extras/cert.pem:/opt/keycloak/conf/truststores/cert.pem
   phpldapadmin:
     image: osixia/phpldapadmin:latest

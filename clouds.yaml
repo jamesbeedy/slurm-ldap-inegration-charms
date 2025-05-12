@@ -1,0 +1,5 @@
+clouds:
+  localhost:
+    type: lxd
+    config:
+      project: myproject
