@@ -15,6 +15,8 @@ import javax.naming.Context;
 import javax.naming.NamingException;
 import javax.naming.directory.*;
 import java.util.Hashtable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class OrganizationEventListenerProvider implements EventListenerProvider {
 
@@ -43,6 +45,7 @@ public class OrganizationEventListenerProvider implements EventListenerProvider 
             if (orgName != null) {
                 try {
                     createLdapOrganizationalUnit(orgName);
+
                     System.out.println("OU created for organization: " + orgName);
 
 		    createLdapFederationProvider(realm, orgId);
@@ -88,9 +91,73 @@ public class OrganizationEventListenerProvider implements EventListenerProvider 
         ldapComponent.getConfig().putSingle("usersDn", "ou=People,ou=" + orgId + ",ou=organizations,dc=vantage");
         ldapComponent.getConfig().putSingle("bindDn", "cn=admin,dc=vantage");
         ldapComponent.getConfig().putSingle("bindCredential", System.getenv("LDAP_ADMIN_PASSWORD"));
-    
+
         // Save to realm
-        session.getContext().getRealm().addComponentModel(ldapComponent);
+        ComponentModel createdProvider = realm.addComponentModel(ldapComponent);
+        String parentId = createdProvider.getId();
+    
+        addMapper(realm, parentId, "sshPublicKey", "user-attribute-ldap-mapper", mapOf(
+            "ldap.attribute", "sshPublicKey",
+            "attribute.force.default", "false",
+            "is.mandatory.in.ldap", "false",
+            "is.binary.attribute", "false",
+            "read.only", "false",
+            "user.model.attribute", "sshPublicKey"
+        ));
+    
+        addMapper(realm, parentId, "loginShell", "user-attribute-ldap-mapper", mapOf(
+            "ldap.attribute", "loginShell",
+            "attribute.default.value", "/bin/bash",
+            "attribute.force.default", "true",
+            "is.mandatory.in.ldap", "false",
+            "is.binary.attribute", "false",
+            "read.only", "false",
+            "user.model.attribute", "loginShell"
+        ));
+    
+        addMapper(realm, parentId, "gidNumber", "user-attribute-ldap-mapper", mapOf(
+            "ldap.attribute", "gidNumber",
+            "attribute.force.default", "false",
+            "is.mandatory.in.ldap", "true",
+            "is.binary.attribute", "false",
+            "read.only", "false",
+            "user.model.attribute", "gidNumber"
+        ));
+    
+        addMapper(realm, parentId, "uidNumber", "user-attribute-ldap-mapper", mapOf(
+            "ldap.attribute", "uidNumber",
+            "attribute.force.default", "false",
+            "is.mandatory.in.ldap", "true",
+            "is.binary.attribute", "false",
+            "read.only", "false",
+            "user.model.attribute", "uidNumber"
+        ));
+    
+        addMapper(realm, parentId, "homeDirectory", "user-attribute-ldap-mapper", mapOf(
+            "ldap.attribute", "homeDirectory",
+            "attribute.force.default", "false",
+            "is.mandatory.in.ldap", "true",
+            "is.binary.attribute", "false",
+            "read.only", "false",
+            "user.model.attribute", "homeDirectory"
+        ));
+    
+        addMapper(realm, parentId, "slurm-users", "group-ldap-mapper", mapOf(
+            "mode", "LDAP_ONLY",
+            "membership.attribute.type", "DN",
+            "user.roles.retrieve.strategy", "LOAD_GROUPS_BY_MEMBER_ATTRIBUTE",
+            "group.name.ldap.attribute", "cn",
+            "membership.ldap.attribute", "member",
+            "membership.user.ldap.attribute", "uid",
+            "preserve.group.inheritance", "true",
+            "ignore.missing.groups", "false",
+            "memberof.ldap.attribute", "memberOf",
+            "group.object.classes", "groupOfNames",
+            "groups.dn", "ou=Groups,ou=" + orgId + ",ou=organizations,dc=vantage",
+            "groups.path", "/",
+            "drop.non.existing.groups.during.sync", "false"
+        ));
+
     
         System.out.println("Federation provider for org " + orgId + " created.");
     }
@@ -146,6 +213,36 @@ public class OrganizationEventListenerProvider implements EventListenerProvider 
 
         ctx.close();
     }
+
+    private void addMapper(RealmModel realm, String parentId, String name, String providerId, Map<String, String> config) {
+        ComponentModel mapper = new ComponentModel();
+        mapper.setName(name);
+        mapper.setProviderId(providerId);
+        mapper.setParentId(parentId);
+        mapper.setProviderType("org.keycloak.storage.ldap.mappers.LDAPStorageMapper");
+    
+        MultivaluedHashMap<String, String> map = new MultivaluedHashMap<>();
+        if (config != null) {
+            config.forEach((k, v) -> map.putSingle(k, v));
+        }
+        mapper.setConfig(map);
+    
+        realm.addComponentModel(mapper);
+    }
+
+
+    private static Map<String, String> mapOf(String... keyValues) {
+        if (keyValues.length % 2 != 0) {
+            throw new IllegalArgumentException("mapOf requires an even number of arguments (key-value pairs)");
+        }
+
+        Map<String, String> map = new HashMap<>();
+        for (int i = 0; i < keyValues.length; i += 2) {
+            map.put(keyValues[i], keyValues[i + 1]);
+        }
+        return map;
+    }
+
 
     @Override
     public void close() {

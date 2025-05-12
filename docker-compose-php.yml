@@ -1,0 +1,9 @@
+services:
+  phpldapadmin:
+    image: osixia/phpldapadmin:latest
+    container_name: phpldapadmin
+    environment:
+      PHPLDAPADMIN_LDAP_HOSTS: openldap.dev.vantagecompute.ai
+      PHPLDAPADMIN_HTTPS: "false"   # deactivate HTTPS
+    ports:
+      - "8081:80"
