@@ -1,11 +1,15 @@
 package com.example.keycloak;
-
+import org.keycloak.models.RealmModel;
+import org.keycloak.models.UserModel;
+import org.keycloak.component.ComponentModel;
+import org.keycloak.models.KeycloakSession;
+import org.keycloak.events.Event;
+import org.keycloak.events.EventListenerProvider;
 import org.keycloak.events.admin.AdminEvent;
 import org.keycloak.events.admin.OperationType;
 import org.keycloak.events.admin.ResourceType;
-import org.keycloak.events.Event;
-import org.keycloak.events.EventListenerProvider;
-import org.keycloak.models.KeycloakSession;
+import org.keycloak.common.util.MultivaluedHashMap;
+
 
 import javax.naming.Context;
 import javax.naming.NamingException;
@@ -30,11 +34,19 @@ public class OrganizationEventListenerProvider implements EventListenerProvider 
         if (event.getOperationType() == OperationType.CREATE &&
             event.getResourceType() == ResourceType.ORGANIZATION) {
 
+            RealmModel realm = session.getContext().getRealm();
+
             String orgName = extractOrgName(event.getResourcePath());
+	    String orgId = extractOrgId(event.getResourcePath());
+
+
             if (orgName != null) {
                 try {
                     createLdapOrganizationalUnit(orgName);
                     System.out.println("OU created for organization: " + orgName);
+
+		    createLdapFederationProvider(realm, orgId);
+
                 } catch (NamingException e) {
                     e.printStackTrace();
                 }
@@ -50,10 +62,45 @@ public class OrganizationEventListenerProvider implements EventListenerProvider 
         return resourcePath;
     }
 
+    private String extractOrgId(String path) {
+        return path.substring(path.lastIndexOf("/") + 1);
+    }
+
+    private void createLdapFederationProvider(RealmModel realm, String orgId) {
+        ComponentModel ldapComponent = new ComponentModel();
+        ldapComponent.setName("ldap-" + orgId);
+        ldapComponent.setParentId(realm.getId());
+        ldapComponent.setProviderId("ldap");
+	ldapComponent.setProviderType("org.keycloak.storage.UserStorageProvider");
+        ldapComponent.setSubType(null);
+        ldapComponent.setConfig(new MultivaluedHashMap<>());
+    
+        // Config - adapt as needed for your LDAP layout
+        ldapComponent.getConfig().putSingle("priority", "1");
+        ldapComponent.getConfig().putSingle("enabled", "true");
+        ldapComponent.getConfig().putSingle("editMode", "WRITABLE");
+        ldapComponent.getConfig().putSingle("vendor", "other");
+        ldapComponent.getConfig().putSingle("usernameLDAPAttribute", "uid");
+        ldapComponent.getConfig().putSingle("rdnLDAPAttribute", "uid");
+        ldapComponent.getConfig().putSingle("uuidLDAPAttribute", "entryUUID");
+        ldapComponent.getConfig().putSingle("userObjectClasses", "top,inetOrgPerson,posixAccount,ldapPublicKey");
+        ldapComponent.getConfig().putSingle("connectionUrl", "ldaps://" + System.getenv("LDAP_HOST"));
+        ldapComponent.getConfig().putSingle("usersDn", "ou=People,ou=" + orgId + ",ou=organizations,dc=vantage");
+        ldapComponent.getConfig().putSingle("bindDn", "cn=admin,dc=vantage");
+        ldapComponent.getConfig().putSingle("bindCredential", System.getenv("LDAP_ADMIN_PASSWORD"));
+    
+        // Save to realm
+        session.getContext().getRealm().addComponentModel(ldapComponent);
+    
+        System.out.println("Federation provider for org " + orgId + " created.");
+    }
+
     private void createLdapOrganizationalUnit(String orgName) throws NamingException {
-        String ldapUrl = "ldaps://192.168.7.67";
+
+        String ldapUrl = "ldaps://" + System.getenv("LDAP_HOST");
+        String bindPassword = System.getenv("LDAP_ADMIN_PASSWORD");
+
         String bindDn = "cn=admin,dc=vantage";
-        String bindPassword = "XvXOQ7nCqrbuamdipT8bbR9mx1OtDeLpTLcycFpN3bY";
         String baseDn = "ou=" + orgName + ",ou=organizations,dc=vantage";
 
         Hashtable<String, String> env = new Hashtable<>();
