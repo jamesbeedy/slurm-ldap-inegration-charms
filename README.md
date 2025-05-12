@@ -131,6 +131,18 @@ Prepare the ldap server cert to be added to the keycloak truststore.
 juju ssh --quiet --pty=false openldap/leader cat /etc/ldap/ldap01_slapd_cert.pem > .extras/cert.pem
 ```
 
+##### Build the custom SPI plugins
+Edit the file and add your ldap connection info.
+```bash
+vim extra/keycloak-org-listener/src/main/java/com/example/keycloak/OrganizationEventListenerProvider.java
+```
+
+```bash
+mvn clean package -f ./extra/keycloak-org-listener/pom.xml
+```
+
+##### Docker Compose Up
+
 ```bash
 JUPYTERHUB_CLIENT_SECRET=`juju config jupyterhub oidc-client-secret` \
 JUPYTERHUB_URL=`juju run jupyterhub/leader get-jupyterhub-url --quiet --format=json  | jq .[].results.url | xargs -I % -0 python3 -c 'print(%)'` \
