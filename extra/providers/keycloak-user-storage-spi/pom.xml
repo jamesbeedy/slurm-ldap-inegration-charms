@@ -1,0 +1,69 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>com.omnivector</groupId>
+  <artifactId>keycloak-user-storage-spi</artifactId>
+  <version>1.0.0-SNAPSHOT</version>
+  <packaging>jar</packaging>
+
+  <properties>
+    <keycloak.version>26.2.2</keycloak.version>
+    <maven.compiler.source>17</maven.compiler.source>
+    <maven.compiler.target>17</maven.compiler.target>
+  </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <!-- Import the Keycloak “server-all” dependency management POM -->
+      <dependency>
+        <groupId>org.keycloak</groupId>
+        <artifactId>keycloak-dependencies-server-all</artifactId>
+        <version>${keycloak.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.unboundid</groupId>
+      <artifactId>unboundid-ldapsdk</artifactId>
+      <version>7.0.2</version>
+    </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-core</artifactId>
+      </dependency>
+
+    <!-- Server SPI for UserStorageProviderFactory, UserStorageProvider, etc. -->
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-server-spi</artifactId>
+      </dependency>
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-server-spi-private</artifactId>
+      </dependency>
+
+    <!-- Storage “private” for federated storage adapter base classes -->
+    <dependency>
+      <groupId>org.keycloak</groupId>
+      <artifactId>keycloak-model-storage-private</artifactId>
+      </dependency>
+
+    <!-- LDAP SDK or other backend libs here -->
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.10.1</version>
+        <configuration>
+          <release>17</release>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
+

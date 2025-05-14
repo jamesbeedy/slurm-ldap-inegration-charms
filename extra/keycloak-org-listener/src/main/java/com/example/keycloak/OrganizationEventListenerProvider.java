@@ -45,10 +45,15 @@ public class OrganizationEventListenerProvider implements EventListenerProvider 
             if (orgName != null) {
                 try {
                     createLdapOrganizationalUnit(orgName);
-
                     System.out.println("OU created for organization: " + orgName);
-
 		    createLdapFederationProvider(realm, orgId);
+                    System.out.println("🏷️ Federation Provider created for new organization: " + orgName);
+
+                    //String roleName = "org-" + orgId;
+                   // if (realm.getRole(roleName) == null) {
+                   //     realm.addRole(roleName);
+                   //     System.out.printf("🏷️ Role '%s' created for new organization%n", roleName);
+                   // }
 
                 } catch (NamingException e) {
                     e.printStackTrace();
@@ -210,6 +215,19 @@ public class OrganizationEventListenerProvider implements EventListenerProvider 
         attrs3.put(oc3);
         attrs3.put("ou", "ServiceAccounts");
         ctx.createSubcontext("ou=ServiceAccounts," + baseDn, attrs3);
+
+
+        // Attributes attrs4 = new BasicAttributes(true);
+       // Attribute oc4 = new BasicAttribute("objectClass");
+       // oc4.add("top");
+       // oc4.add("groupOfNames");
+      //  oc4.add("posixGroup");
+       // attrs4.put(oc3);
+      //  attrs4.put("cn", "slurm-users");
+      //  attrs4.put("description", "slurm users group");
+      //  attrs4.put("member", "uid=test,ou=People," + baseDn);
+      //  attrs4.put("gidNumber", "5599");
+      //  ctx.createSubcontext("cn=slurm-users,ou=Groups," + baseDn, attrs4);
 
         ctx.close();
     }

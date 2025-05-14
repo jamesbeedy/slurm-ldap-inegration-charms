@@ -1,19 +1,43 @@
 services:
-  keycloak:
-    image: quay.io/keycloak/keycloak:latest
+  postgres:
+    image: postgres:15
+    container_name: keycloak-db
     environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: keycloak
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  keycloak:
+    image: keycloak/keycloak:26.2.4
+    depends_on:
+      - postgres
+    environment:
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: keycloak
+      KC_DB_SCHEMA: public
+      KC_HEALTH_ENABLED: true
+      KC_METRICS_ENABLED: true
+      KC_LOG_LEVEL: INFO
+      KC_HTTP_ENABLED: true
       KC_BOOTSTRAP_ADMIN_USERNAME: admin
       KC_BOOTSTRAP_ADMIN_PASSWORD: admin
       LDAP_HOST: ${LDAP_HOST}
       LDAP_ADMIN_PASSWORD: ${LDAP_ADMIN_PASSWORD}
       JUPYTERHUB_CLIENT_SECRET: ${JUPYTERHUB_CLIENT_SECRET}
       JUPYTERHUB_URL: ${JUPYTERHUB_URL}
+      KC_SPI_EVENTS_LISTENER_USER_ORG_FEDERATION_LISTENER_ENABLED: "true"
     command: start-dev --spi-admin-allowed-system-variables=LDAP_HOST,LDAP_ADMIN_PASSWORD,JUPYTERHUB_CLIENT_SECRET,JUPYTERHUB_URL --import-realm --verbose
     ports:
       - "8080:8080"
     volumes:
       - ./extra/keycloak/realms/realm-next-export.json:/opt/keycloak/data/import/realm-export.json
       - ./extra/keycloak-org-listener/target/keycloak-org-listener-1.0.0.jar:/opt/keycloak/providers/keycloak-org-listener-1.0.0.jar
+      - ./extra/keycloak-user-listener/target/keycloak-user-listener-1.0.0.jar:/opt/keycloak/providers/keycloak-user-listener-1.0.0.jar
+      - ./extra/keycloak-user-org-federation-listener/target/user-org-federation-listener-1.0.0.jar:/opt/keycloak/providers/user-org-federation-listener-1.0.0.jar
       - ./.extras/cert.pem:/opt/keycloak/conf/truststores/cert.pem
   phpldapadmin:
     image: osixia/phpldapadmin:latest
@@ -23,3 +47,7 @@ services:
       PHPLDAPADMIN_HTTPS: "false"   # deactivate HTTPS
     ports:
       - "8081:80"
+
+volumes:
+  postgres_data:
+

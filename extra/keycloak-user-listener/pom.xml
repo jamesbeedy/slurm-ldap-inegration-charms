@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.example.keycloak</groupId>
-  <artifactId>keycloak-org-listener</artifactId>
+  <artifactId>keycloak-user-listener</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
 
@@ -16,19 +16,19 @@
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-core</artifactId>
-      <version>${keycloak.version}</version>
+      <version>26.2.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi</artifactId>
-      <version>${keycloak.version}</version>
+      <version>26.2.2</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.keycloak</groupId>
       <artifactId>keycloak-server-spi-private</artifactId>
-      <version>${keycloak.version}</version>
+      <version>26.2.2</version>
       <scope>provided</scope>
     </dependency>
   </dependencies>
