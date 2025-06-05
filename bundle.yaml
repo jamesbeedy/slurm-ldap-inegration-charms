@@ -23,6 +23,7 @@ applications:
     num_units: 1
     to:
     - "0"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine root-disk=51200
 
   openldap:
     charm: ./_build/openldap.charm
@@ -60,6 +61,7 @@ applications:
       keycloak-url: http://192.168.7.8:8080
     to:
     - "4"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
 
   sackd:
     charm: sackd
@@ -67,6 +69,7 @@ applications:
     num_units: 1
     to:
     - "4"
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
 
   slurmctld:
     charm: slurmctld
@@ -76,6 +79,7 @@ applications:
     - "5"
     options:
       default-partition: slurmd
+    constraints: arch=amd64 cpu-cores=2 mem=2048 virt-type=virtual-machine
 
   slurmd:
     charm: slurmd
@@ -83,6 +87,7 @@ applications:
     num_units: 1
     to:
     - "6"
+    constraints: arch=amd64 cpu-cores=4 mem=8192 virt-type=virtual-machine
  
 machines:
   "0":
