@@ -49,45 +49,45 @@ Run `juju status --watch 1s --color` to watch the infrastructure spin up.
 
 When the deployment is finished it should resemble:
 ```bash
-Model         Controller           Cloud/Region         Version  SLA          Timestamp
-ldap-testing  localhost-localhost  localhost/localhost  3.6.5    unsupported  22:01:39Z
+Model         Controller  Cloud/Region  Version  SLA          Timestamp
+ldap-testing  localhost   localhost     3.6.5    unsupported  15:15:43Z
 
 App             Version          Status  Scale  Charm              Channel      Rev  Exposed  Message
-jupyterhub                       active      1  jupyterhub                        0  no       http://192.168.7.143:8000
-jupyterhub-nfs                   active      1  filesystem-client  latest/edge   15  no       Mounted filesystem at `/jupyterhub-nfs`.
-mysql           8.0.41-0ubun...  active      1  mysql              8.0/stable   366  no     
-nfs-home                         active      1  nfs-home                          0  no     
+jupyterhub                       active      1  jupyterhub                        0  no       http://192.168.7.67:8000
+jupyterhub-nfs                   active      1  filesystem-client  latest/edge   16  no       Mounted filesystem at `/jupyterhub-nfs`.
+mysql           8.0.41-0ubun...  active      1  mysql              8.0/stable   366  no       
+nfs-home                         active      1  nfs-home                          0  no       
 openldap                         active      1  openldap                          0  no       Serving: dc=vantage
-sackd           23.11.4-1.2u...  active      1  sackd              latest/edge   18  no        
-slurmctld       23.11.4-1.2u...  active      1  slurmctld          latest/edge  100  no     
-slurmd          23.11.4-1.2u...  active      1  slurmd             latest/edge  121  no        
-slurmdbd        23.11.4-1.2u...  active      1  slurmdbd           latest/edge   92  no     
+sackd           23.11.4-1.2u...  active      1  sackd              latest/edge   24  no       
+slurmctld       23.11.4-1.2u...  active      1  slurmctld          latest/edge  106  no       
+slurmd          23.11.4-1.2u...  active      1  slurmd             latest/edge  127  no       
+slurmdbd        23.11.4-1.2u...  active      1  slurmdbd           latest/edge   98  no       
 sssd-autofs                      active      3  sssd                              0  no       
-sssd-no-autofs                   active      1  sssd                              0  no     
+sssd-no-autofs                   active      1  sssd                              0  no       
 
 Unit                 Workload  Agent  Machine  Public address  Ports           Message
-jupyterhub/0*        active    idle   4        192.168.7.143                   http://192.168.7.143:8000
-mysql/0*             active    idle   2        192.168.7.139   3306,33060/tcp  Primary
-nfs-home/0*          active    idle   0        192.168.7.141           
-  sssd-no-autofs/0*  active    idle            192.168.7.141           
-openldap/0*          active    idle   1        192.168.7.137                   Serving: dc=vantage
-sackd/0*             active    idle   4        192.168.7.143                        
-  sssd-autofs/2      active    idle            192.168.7.143                       
-slurmctld/0*         active    idle   5        192.168.7.140           
-  sssd-autofs/0*     active    idle            192.168.7.140                           
-slurmd/0*            active    idle   6        192.168.7.142                       
-  jupyterhub-nfs/0*  active    idle            192.168.7.142                   Mounted filesystem at `/jupyterhub-nfs`.
-  sssd-autofs/1      active    idle            192.168.7.142                       
-slurmdbd/0*          active    idle   3        192.168.7.138           
+jupyterhub/0*        active    idle   4        192.168.7.67    8000/tcp        http://192.168.7.67:8000
+mysql/0*             active    idle   2        192.168.7.63    3306,33060/tcp  Primary
+nfs-home/0*          active    idle   0        192.168.7.64                    
+  sssd-no-autofs/0*  active    idle            192.168.7.64                    
+openldap/0*          active    idle   1        192.168.7.61    389/tcp         Serving: dc=vantage
+sackd/0*             active    idle   4        192.168.7.67    6818/tcp        
+  sssd-autofs/2      active    idle            192.168.7.67                    
+slurmctld/0*         active    idle   5        192.168.7.65    6817,9092/tcp   
+  sssd-autofs/0*     active    idle            192.168.7.65                    
+slurmd/0*            active    idle   6        192.168.7.66    6818/tcp        
+  jupyterhub-nfs/0*  active    idle            192.168.7.66                    Mounted filesystem at `/jupyterhub-nfs`.
+  sssd-autofs/1      active    idle            192.168.7.66                    
+slurmdbd/0*          active    idle   3        192.168.7.62    6819/tcp        
 
-Machine  State    Address        Inst id        Base          AZ  Message
-0        started  192.168.7.141  juju-571140-0  ubuntu@24.04      Running
-1        started  192.168.7.137  juju-571140-1  ubuntu@24.04      Running
-2        started  192.168.7.139  juju-571140-2  ubuntu@22.04      Running
-3        started  192.168.7.138  juju-571140-3  ubuntu@24.04      Running
-4        started  192.168.7.143  juju-571140-4  ubuntu@24.04      Running
-5        started  192.168.7.140  juju-571140-5  ubuntu@24.04      Running
-6        started  192.168.7.142  juju-571140-6  ubuntu@24.04      Running
+Machine  State    Address       Inst id        Base          AZ  Message
+0        started  192.168.7.64  juju-e07d25-0  ubuntu@24.04      Running
+1        started  192.168.7.61  juju-e07d25-1  ubuntu@24.04      Running
+2        started  192.168.7.63  juju-e07d25-2  ubuntu@22.04      Running
+3        started  192.168.7.62  juju-e07d25-3  ubuntu@24.04      Running
+4        started  192.168.7.67  juju-e07d25-4  ubuntu@24.04      Running
+5        started  192.168.7.65  juju-e07d25-5  ubuntu@24.04      Running
+6        started  192.168.7.66  juju-e07d25-6  ubuntu@24.04      Running
 ```
 
 ### Access the System
